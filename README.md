@@ -7,6 +7,25 @@
 
 > 本项目仅为镜像修复/部署脚本，不含上游任何程序代码。
 
+---
+
+## ⚠️ 镜像包是私有的，拉取前需登录
+
+GHCR 上这个包当前为 **private**，匿名 `docker pull` 会返回 `denied`。
+先登录一次（只需做一回）：
+
+```bash
+# 用一个带 read:packages 的 GitHub PAT 作为密码
+echo "<你的PAT>" | docker login ghcr.io -u xiguazhu1998 --password-stdin
+```
+
+PAT 在 https://github.com/settings/tokens 生成，勾选 `read:packages` 即可。
+
+> 注意：**不能用 GitHub 账号密码**，GHCR 只认 PAT。
+> 登录信息存在 `~/.docker/config.json`，之后 pull 不用再输入。
+
+---
+
 ## 一键部署
 
 ```bash
@@ -45,7 +64,7 @@ docker run -d --name symedia --restart unless-stopped \
 
 ## 镜像修复了什么
 
-上游镜像 pull 都拉不下来，一层就 646MB，里面混了 **42 个 overlayfs 白化条目**
+上游镜像 **pull 都拉不下来**，一层就 646MB，里面混了 **42 个 overlayfs 白化条目**
 （`.wh.util.py` 之类，mode 0 / epoch 时间）。Docker 解包时会尝试把这类条目
 `mknod` 成字符设备，而同层已存在同名实体文件，于是：
 
