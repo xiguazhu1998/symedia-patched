@@ -1,0 +1,30 @@
+services:
+  symedia:
+    image: ghcr.io/xiguazhu1998/symedia:patched
+    container_name: symedia
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config:/app/config
+      - ./logs:/logs
+      - ./media:/media
+      - ./playwright:/symedia/.cache/ms-playwright
+      # 授权守卫桩（替换被 pyarmor 混淆的 message_handler）
+      - ./stub/message_handler.py:/app/Symedia/apps/message/message_handler.py:ro
+      # urllib3 2.x 兼容补丁（telebot 依赖已被移除的 fields.format_header_param）
+      - ./stub/sitecustomize.py:/usr/local/lib/python3.12/site-packages/sitecustomize.py:ro
+    environment:
+      TZ: Asia/Shanghai
+      PUID: "0"
+      PGID: "0"
+      UMASK: "000"
+      PORT: "18095"
+      NGINX_PORT: "8095"
+      PYTHONDONTWRITEBYTECODE: "1"
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "3"
